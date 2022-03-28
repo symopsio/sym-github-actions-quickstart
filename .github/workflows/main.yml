@@ -1,0 +1,135 @@
+name: "Main"
+
+on:
+  push:
+    branches:
+      - main
+      - sandbox
+  pull_request:
+
+env:
+  AWS_REGION: us-east-1
+  #TODO Change this ARN to your bootstrap ARN
+  AWS_ROLE_ARN: arn:aws:iam::123456789012:role/sym/SymGitHubActionAccess
+  #TODO Create this bot token with the symflow CLI
+  SYM_JWT: ${{ secrets.SYM_JWT }}
+  TF_ENV: sandbox
+  TF_PLUGIN_CACHE_DIR: ${{ github.workspace }}/.terraform.d/plugin-cache
+
+permissions:
+  contents:      read
+  id-token:      write
+  issues:        write
+  pull-requests: write
+
+jobs:
+
+  terraform:
+    name: "Terraform"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.9
+
+      - name: Create Terraform Plugin Cache Dir
+        run: mkdir --parents $TF_PLUGIN_CACHE_DIR
+
+      - name: Cache Terraform
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.TF_PLUGIN_CACHE_DIR }}
+          key: ${{ runner.os }}-terraform-${{ hashFiles('**/.terraform.lock.hcl') }}
+
+      - name: PRs and pushes to main should use the prod environment
+        run: |
+          echo "TF_ENV=prod" >> $GITHUB_ENV
+        if: >
+          github.ref == 'refs/heads/main' ||
+          github.event.pull_request.base.ref == 'main'
+
+      - name: Terraform Format
+        id: fmt
+        run: terraform fmt -check environments/${{ env.TF_ENV }}
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@master
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          role-session-name: GitHubActions-${{ github.run_id }}-${{ github.run_number }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform Init
+        id: init
+        run: terraform -chdir=environments/${{ env.TF_ENV }} init
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform -chdir=environments/${{ env.TF_ENV }} validate -no-color
+
+      - name: Terraform Plan
+        id: plan
+        if: github.event_name == 'pull_request'
+        run: terraform -chdir=environments/${{ env.TF_ENV }} plan -no-color
+        continue-on-error: true
+
+      - uses: actions/github-script@0.9.0
+        if: github.event_name == 'pull_request'
+        env:
+          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Environment: \`${{ env.TF_ENV }}\`
+            #### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`\n
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
+      - name: Terraform Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+
+      - name: Terraform Apply
+        if: >
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/sandbox')
+        run: terraform -chdir=environments/${{ env.TF_ENV}} apply -auto-approve
+
+  # Run E2E tests in the sandbox flow if you're opening a PR to main
+  cypress:
+    if: github.event.pull_request.base.ref == 'main'
+    name: "Cypress"
+    runs-on: ubuntu-latest
+    needs: terraform
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Cypress Run
+        uses: cypress-io/github-action@v2
+        with:
+          working-directory: test

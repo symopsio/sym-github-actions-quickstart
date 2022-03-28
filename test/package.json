@@ -1,0 +1,12 @@
+{
+  "name": "sym-quickstart-integration-tests",
+  "version": "1.0.0",
+  "description": "Integration tests for Sym workflows",
+  "scripts": {
+    "test": "cypress run --browser chrome"
+  },
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "cypress": "^9.5.1"
+  }
+}

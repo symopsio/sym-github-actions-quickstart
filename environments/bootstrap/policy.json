@@ -1,0 +1,60 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:CreateBucket",
+                "s3:Get*",
+                "s3:List*",
+                "s3:Put*"
+            ],
+            "Resource": [
+                "arn:aws:s3:::sym-tfstate-${aws_account_id}",
+                "arn:aws:s3:::sym-tfstate-${aws_account_id}/*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:CreateTable",
+                "dynamodb:DeleteItem",
+                "dynamodb:Describe*",
+                "dynamodb:GetItem",
+                "dynamodb:PutItem",
+                "dynamodb:List*",
+                "dynamodb:TagResource",
+                "dynamodb:UpdateContinuousBackups"
+            ],
+            "Resource": "arn:aws:dynamodb:us-east-1:${aws_account_id}:table/sym-tfstate-${aws_account_id}-lock"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "iam:AttachRolePolicy",
+                "iam:CreateRole",
+                "iam:CreatePolicy",
+                "iam:CreatePolicyVersion",
+                "iam:Get*",
+                "iam:List*",
+                "iam:Tag*",
+                "iam:UpdateAssumeRolePolicy"
+            ],
+            "Resource": [
+                "arn:aws:iam::*:policy/sym/*",
+                "arn:aws:iam::*:role/sym/*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "secretsmanager:Create*",
+                "secretsmanager:Describe*",
+                "secretsmanager:Get*",
+                "secretsmanager:Put*",
+                "secretsmanager:Tag*"
+            ],
+            "Resource": "arn:aws:secretsmanager:*:*:secret:/symops.com/*"
+        }
+    ]
+}
