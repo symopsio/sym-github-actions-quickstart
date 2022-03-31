@@ -5,7 +5,7 @@ on: workflow_dispatch
 env:
   AWS_REGION: us-east-1
   #TODO Change this ARN to your bootstrap ARN
-  AWS_ROLE_ARN: arn:aws:iam::123456789012:role/sym/SymGitHubActionAccess
+  AWS_ROLE_ARN: arn:aws:iam::017453300286:role/sym/SymGitHubActionsAccess-Jbass
   # Create this bot token with the symflow CLI
   SYM_JWT: ${{ secrets.SYM_JWT }}
 
