@@ -16,10 +16,10 @@ module "remote_state" {
   name       = "tfstate"
   attributes = [data.aws_caller_identity.current.account_id]
 
-  terraform_backend_config_file_path = ""
+  terraform_backend_config_file_path = "."
   terraform_backend_config_file_name = "backend.tf"
   terraform_state_file               = "prod/terraform.tfstate"
-  force_destroy                      = true
+  force_destroy                      = false
 }
 
 # A Sym Runtime that executes your Flows.
