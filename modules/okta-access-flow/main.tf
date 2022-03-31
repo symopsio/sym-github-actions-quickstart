@@ -1,12 +1,7 @@
-locals {
-  flow_suffix = var.sym_environment.name == "prod" ? "" : var.sym_environment.name
-  flow_name   = "okta_access_${local.flow_suffix}"
-}
-
 # The Flow that grants users access to Okta targets.
 resource "sym_flow" "this" {
   name  = local.flow_name
-  label = "Okta Access"
+  label = local.flow_label
 
   template = "sym:template:approval:1.0.0"
 
@@ -74,3 +69,12 @@ resource "sym_integration" "okta" {
     api_token_secret = sym_secret.okta_api_key.id
   }
 }
+
+locals {
+  flow_suffix  = var.sym_environment.name == "prod" ? "" : "_${var.sym_environment.name}"
+  label_suffix = var.sym_environment.name == "prod" ? "" : " [${var.sym_environment.name}]"
+
+  flow_name  = "okta${local.flow_suffix}"
+  flow_label = "Okta${local.label_suffix}"
+}
+
