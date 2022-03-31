@@ -35,6 +35,9 @@
                 "iam:CreateRole",
                 "iam:CreatePolicy",
                 "iam:CreatePolicyVersion",
+                "iam:DeletePolicy",
+                "iam:DeleteRole",
+                "iam:DetachRolePolicy",
                 "iam:Get*",
                 "iam:List*",
                 "iam:Tag*",
@@ -50,6 +53,7 @@
             "Action": [
                 "secretsmanager:Create*",
                 "secretsmanager:Describe*",
+                "secretsmanager:Delete*",
                 "secretsmanager:Get*",
                 "secretsmanager:Put*",
                 "secretsmanager:Tag*"
