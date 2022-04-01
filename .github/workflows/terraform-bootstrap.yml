@@ -5,7 +5,7 @@ on: workflow_dispatch
 env:
   AWS_REGION: us-east-1
   #TODO Change this ARN to your bootstrap ARN
-  AWS_ROLE_ARN: arn:aws:iam::017453300286:role/sym/SymGitHubActionsAccess-Jbass
+  AWS_ROLE_ARN: arn:aws:iam::012345678901:role/sym/SymGitHubActionsAccess
 
 permissions:
   contents:      write

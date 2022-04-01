@@ -20,11 +20,6 @@ resource "sym_flow" "this" {
           name     = "reason"
           type     = "string"
           required = true
-        },
-        {
-          name     = "ticket"
-          type     = "string"
-          required = true
         }
       ]
     )

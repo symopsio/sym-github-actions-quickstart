@@ -10,13 +10,11 @@ on:
 env:
   AWS_REGION: us-east-1
   #TODO Change this ARN to your bootstrap ARN
-  AWS_ROLE_ARN: arn:aws:iam::017453300286:role/sym/SymGitHubActionsAccess-Jbass
+  AWS_ROLE_ARN: arn:aws:iam::012345678901:role/sym/SymGitHubActionsAccess
   # Configure a Sym bot token with the symflow CLI
   SYM_JWT: ${{ secrets.SYM_JWT }}
   TF_ENV: sandbox
   TF_PLUGIN_CACHE_DIR: ${{ github.workspace }}/.terraform.d/plugin-cache
-  # For local dev only
-  SYM_API_URL: https://sym-jon.ngrok.io/api/v1
 
 permissions:
   contents:      read
